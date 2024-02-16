@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 
   const options = AnchorProvider.defaultOptions();
   const connection = new Connection(
-    'https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a',
+    'https://rpcrpc.rpc.devnet',
     options,
   );
 

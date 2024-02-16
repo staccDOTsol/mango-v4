@@ -17,9 +17,9 @@ cp -v ./target/types/mango_v4.ts ./ts/client/src/mango_v4.ts
 (cd ./ts/client && yarn tsc)
 
 # publish program
-solana --url https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a program deploy --program-id $PROGRAM_ID  \
-    -k $WALLET_WITH_FUNDS target/deploy/mango_v4.so --skip-fee-check --keypair target/deploy/mango_v4-keypair.json
+solana --url https://rpcrpc.rpc.devnet program deploy --program-id $PROGRAM_ID  \
+    -k $WALLET_WITH_FUNDS target/deploy/mango_v4.so --skip-fee-check 
 
 # publish idl
-anchor idl upgrade --provider.cluster https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a --provider.wallet $WALLET_WITH_FUNDS \
+anchor idl upgrade --provider.cluster https://rpcrpc.rpc.devnet --provider.wallet $WALLET_WITH_FUNDS \
     --filepath target/idl/mango_v4_no_docs.json $PROGRAM_ID
