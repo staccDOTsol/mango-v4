@@ -33,8 +33,8 @@ See DEVELOPING.md and FAQ-DEV.md
 
 ### Deployments
 
-- devnet: 4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg
-- mainnet-beta: 4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg
+- devnet: 5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG
+- mainnet-beta: 5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG
 - primary mango group on mainnet-beta: 78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX
 
 ### Release

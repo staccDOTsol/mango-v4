@@ -10965,15 +10965,6 @@ export type MangoV4 = {
             "name": "Pyth"
           },
           {
-            "name": "Stub"
-          },
-          {
-            "name": "SwitchboardV1"
-          },
-          {
-            "name": "SwitchboardV2"
-          },
-          {
             "name": "OrcaCLMM"
           }
         ]
@@ -25138,15 +25129,6 @@ export const IDL: MangoV4 = {
         "variants": [
           {
             "name": "Pyth"
-          },
-          {
-            "name": "Stub"
-          },
-          {
-            "name": "SwitchboardV1"
-          },
-          {
-            "name": "SwitchboardV2"
           },
           {
             "name": "OrcaCLMM"

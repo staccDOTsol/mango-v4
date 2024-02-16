@@ -1,13 +1,11 @@
 use std::mem::size_of;
 
 use anchor_lang::prelude::*;
-use anchor_lang::{AnchorDeserialize, Discriminator};
+use anchor_lang::{AnchorDeserialize};
 use derivative::Derivative;
 use fixed::types::{I80F48, U64F64};
 
 use static_assertions::const_assert_eq;
-use switchboard_program::FastRoundResultAccountData;
-use switchboard_v2::AggregatorAccountData;
 
 use crate::accounts_zerocopy::*;
 
@@ -113,9 +111,9 @@ impl OracleConfigParams {
 #[derive(Clone, Copy, PartialEq, AnchorSerialize, AnchorDeserialize)]
 pub enum OracleType {
     Pyth,
-    Stub,
-    SwitchboardV1,
-    SwitchboardV2,
+    //Stub,
+    //SwitchboardV1,
+    //SwitchboardV2,
     OrcaCLMM,
 }
 
@@ -178,22 +176,7 @@ const_assert_eq!(size_of::<StubOracle>() % 8, 0);
 pub fn determine_oracle_type(acc_info: &impl KeyedAccountReader) -> Result<OracleType> {
     let data = acc_info.data();
 
-    if u32::from_le_bytes(data[0..4].try_into().unwrap()) == pyth_sdk_solana::state::MAGIC {
-        return Ok(OracleType::Pyth);
-    } else if data[0..8] == StubOracle::discriminator() {
-        return Ok(OracleType::Stub);
-    }
-    // https://github.com/switchboard-xyz/switchboard-v2/blob/main/libraries/rs/src/aggregator.rs#L114
-    // note: disc is not public, hence the copy pasta
-    else if data[0..8] == [217, 230, 65, 101, 201, 162, 27, 125] {
-        return Ok(OracleType::SwitchboardV2);
-    }
-    // note: this is the only known way of checking this
-    else if acc_info.owner() == &switchboard_v1_devnet_oracle::ID
-        || acc_info.owner() == &switchboard_v2_mainnet_oracle::ID
-    {
-        return Ok(OracleType::SwitchboardV1);
-    } else if acc_info.owner() == &orca_mainnet_whirlpool::ID {
+    if acc_info.owner() == &orca_mainnet_whirlpool::ID {
         return Ok(OracleType::OrcaCLMM);
     }
 
@@ -273,7 +256,6 @@ fn get_pyth_state(
         oracle_type: OracleType::Pyth,
     })
 }
-
 /// Contains all oracle account infos that could be used to read price
 pub struct OracleAccountInfos<'a, T: KeyedAccountReader> {
     pub oracle: &'a T,
@@ -331,78 +313,7 @@ fn oracle_state_unchecked_inner<T: KeyedAccountReader>(
     let oracle_type = determine_oracle_type(oracle_info)?;
 
     Ok(match oracle_type {
-        OracleType::Stub => {
-            let stub = oracle_info.load::<StubOracle>()?;
-            let deviation = if stub.deviation == 0 {
-                // allows the confidence check to pass even for negative prices
-                I80F48::MIN
-            } else {
-                stub.deviation
-            };
-            let last_update_slot = if stub.last_update_slot == 0 {
-                // ensure staleness checks will never fail
-                u64::MAX
-            } else {
-                stub.last_update_slot
-            };
-            OracleState {
-                price: stub.price,
-                last_update_slot,
-                deviation,
-                oracle_type: OracleType::Stub,
-            }
-        }
         OracleType::Pyth => get_pyth_state(oracle_info, base_decimals)?,
-        OracleType::SwitchboardV2 => {
-            fn from_foreign_error(e: impl std::fmt::Display) -> Error {
-                error_msg!("{}", e)
-            }
-
-            let feed = bytemuck::from_bytes::<AggregatorAccountData>(&data[8..]);
-            let feed_result = feed.get_result().map_err(from_foreign_error)?;
-            let ui_price: f64 = feed_result.try_into().map_err(from_foreign_error)?;
-            let ui_deviation: f64 = feed
-                .latest_confirmed_round
-                .std_deviation
-                .try_into()
-                .map_err(from_foreign_error)?;
-
-            // The round_open_slot is an underestimate of the last update slot: Reporters will see
-            // the round opening and only then start executing the price tasks.
-            let last_update_slot = feed.latest_confirmed_round.round_open_slot;
-
-            let decimals = QUOTE_DECIMALS - (base_decimals as i8);
-            let decimal_adj = power_of_ten(decimals);
-            let price = I80F48::from_num(ui_price) * decimal_adj;
-            let deviation = I80F48::from_num(ui_deviation) * decimal_adj;
-            require_gte!(price, 0);
-            OracleState {
-                price,
-                last_update_slot,
-                deviation,
-                oracle_type: OracleType::SwitchboardV2,
-            }
-        }
-        OracleType::SwitchboardV1 => {
-            let result = FastRoundResultAccountData::deserialize(data).unwrap();
-            let ui_price = I80F48::from_num(result.result.result);
-
-            let ui_deviation =
-                I80F48::from_num(result.result.max_response - result.result.min_response);
-            let last_update_slot = result.result.round_open_slot;
-
-            let decimals = QUOTE_DECIMALS - (base_decimals as i8);
-            let decimal_adj = power_of_ten(decimals);
-            let price = ui_price * decimal_adj;
-            let deviation = ui_deviation * decimal_adj;
-            require_gte!(price, 0);
-            OracleState {
-                price,
-                last_update_slot,
-                deviation,
-                oracle_type: OracleType::SwitchboardV1,
-            }
-        }
         OracleType::OrcaCLMM => {
             let whirlpool = load_whirlpool_state(oracle_info)?;
 
@@ -485,21 +396,6 @@ mod tests {
 
         let fixtures = vec![
             (
-                "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
-                OracleType::Pyth,
-                Pubkey::default(),
-            ),
-            (
-                "8k7F9Xb36oFJsjpCKpsXvg4cgBRoZtwNTc3EzG5Ttd2o",
-                OracleType::SwitchboardV1,
-                switchboard_v1_devnet_oracle::ID,
-            ),
-            (
-                "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
-                OracleType::SwitchboardV2,
-                Pubkey::default(),
-            ),
-            (
                 "83v8iPyZihDEjDdY8RdZddyZNyUtXngz69Lgo9Kt5d6d",
                 OracleType::OrcaCLMM,
                 orca_mainnet_whirlpool::ID,
@@ -556,13 +452,7 @@ mod tests {
                 OracleType::OrcaCLMM,
                 orca_mainnet_whirlpool::ID,
                 9, // SOL/USDC pool
-            ),
-            (
-                "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
-                OracleType::Pyth,
-                Pubkey::default(),
-                6,
-            ),
+            )
         ];
 
         let clmm_file = format!("resources/test/{}.bin", fixtures[0].0);

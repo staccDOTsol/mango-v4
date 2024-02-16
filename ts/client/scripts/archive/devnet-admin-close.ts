@@ -17,7 +17,7 @@ export const DEVNET_MINTS = new Map([
 async function main() {
   const options = AnchorProvider.defaultOptions();
   const connection = new Connection(
-    'https://mango.devnet.rpcpool.com',
+    'https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a',
     options,
   );
 

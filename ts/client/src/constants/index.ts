@@ -21,9 +21,9 @@ export const OPENBOOK_PROGRAM_ID = {
 };
 
 export const MANGO_V4_ID = {
-  testnet: new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
-  devnet: new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
-  'mainnet-beta': new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
+  testnet: new PublicKey('5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG'),
+  devnet: new PublicKey('5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG'),
+  'mainnet-beta': new PublicKey('5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG'),
 };
 
 export const MANGO_V4_MAIN_GROUP = new PublicKey(

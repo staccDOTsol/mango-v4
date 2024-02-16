@@ -41,7 +41,7 @@ const GROUP_NUM = Number(process.env.GROUP_NUM || 0);
 async function main(): Promise<void> {
   const options = AnchorProvider.defaultOptions();
   const connection = new Connection(
-    'https://mango.devnet.rpcpool.com',
+    'https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a',
     options,
   );
 

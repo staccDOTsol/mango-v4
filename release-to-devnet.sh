@@ -2,8 +2,8 @@
 
 set -ex pipefail
 
-WALLET_WITH_FUNDS=~/.config/solana/mango-mainnet-1.json
-PROGRAM_ID=4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg
+WALLET_WITH_FUNDS=~/7i.json
+PROGRAM_ID=5JfWyyooqZbKpA9ZbZSrbPke4TKyxV2mo5wcLEptQ5NG
 
 # build program, 
 anchor build -- --features enable-gpl
@@ -17,9 +17,9 @@ cp -v ./target/types/mango_v4.ts ./ts/client/src/mango_v4.ts
 (cd ./ts/client && yarn tsc)
 
 # publish program
-solana --url https://mango.devnet.rpcpool.com program deploy --program-id $PROGRAM_ID  \
-    -k $WALLET_WITH_FUNDS target/deploy/mango_v4.so --skip-fee-check
+solana --url https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a program deploy --program-id $PROGRAM_ID  \
+    -k $WALLET_WITH_FUNDS target/deploy/mango_v4.so --skip-fee-check --keypair target/deploy/mango_v4-keypair.json
 
 # publish idl
-anchor idl upgrade --provider.cluster https://mango.devnet.rpcpool.com --provider.wallet $WALLET_WITH_FUNDS \
+anchor idl upgrade --provider.cluster https://jarrett-devnet-8fa6.devnet.rpcpool.com/283aba57-34a4-4500-ba4d-1832ff9ca64a --provider.wallet $WALLET_WITH_FUNDS \
     --filepath target/idl/mango_v4_no_docs.json $PROGRAM_ID
