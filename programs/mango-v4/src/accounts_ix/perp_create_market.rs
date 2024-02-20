@@ -6,8 +6,6 @@ use anchor_lang::prelude::*;
 #[instruction(perp_market_index: PerpMarketIndex)]
 pub struct PerpCreateMarket<'info> {
     #[account(
-        has_one = admin,
-        constraint = group.load()?.is_ix_enabled(IxGate::PerpCreateMarket) @ MangoError::IxIsDisabled,
         constraint = group.load()?.perps_supported(),
     )]
     pub group: AccountLoader<'info, Group>,
